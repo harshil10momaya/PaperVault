@@ -30,7 +30,7 @@ public class LoginController {
     }
 
     /**
-     * Handles the action when the Login button is pressed.
+     * Handles the action when the Student Login button is pressed.
      */
     @FXML
     private void handleLogin(ActionEvent event) {
@@ -67,6 +67,31 @@ public class LoginController {
     }
 
     /**
+     * Handles the action when the Admin Access button is pressed.
+     */
+    @FXML
+    private void handleAdminAccess(ActionEvent event) {
+        try {
+            // Find the current stage (window)
+            Stage currentStage = (Stage) ((Parent) studentIdField.getParent()).getScene().getWindow();
+            
+            // Load the Admin Login FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AdminLoginView.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root);
+            currentStage.setScene(scene);
+            currentStage.setTitle("PaperVault - Admin Login");
+            currentStage.setResizable(false);
+            currentStage.show();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            messageLabel.setText("System error accessing admin panel.");
+        }
+    }
+
+    /**
      * Helper method to switch scenes and pass the authenticated student data.
      */
     private void loadNextScene(String fxmlFile, Student student) throws IOException {
@@ -74,11 +99,11 @@ public class LoginController {
         Stage currentStage = (Stage) ((Parent) studentIdField.getParent()).getScene().getWindow();
         
         // 2. Load the next FXML
-        // Note the leading slash to ensure we load from the classpath root
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
         Parent root = loader.load();
         
         // 3. Get the controller for the new scene and pass the Student object
+        // This is the crucial step for personalizing the dashboard
         DashboardController controller = loader.getController();
         controller.setLoggedInUser(student); 
         
