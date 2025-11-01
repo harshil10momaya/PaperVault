@@ -1,0 +1,30 @@
+# Compiled class files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Visual Studio Code
+.vscode/
+
+# Eclipse/IntelliJ
+.classpath
+.project
+.settings/
+bin/
+*.iml
+*.ipr
+*.iws
+
+# Log files
+*.log
