@@ -4,19 +4,23 @@ public class TestDAO {
     public static void main(String[] args) {
         StudentDAO dao = new StudentDAO();
         
-        // 1. Setup Data: Assuming Program ID 1 exists (from your inserted programs)
-        Student admin = new Student("ADMIN001", 1, "PaperVault Admin");
+        // 1. Setup Data: Program ID 1 is for TCS
+        String adminId = "ADMIN001";
+        int adminProgramId = 1; 
+        String adminName = "PaperVault Admin";
         String adminPassword = "password123";
 
-        // 2. Add the student (Hashed password goes into DB)
-        if (dao.addStudent(admin, adminPassword)) {
+        // We use signUpStudent now, which takes name and programId
+        System.out.println("Attempting to set up Admin user...");
+        if (dao.signUpStudent(adminId, adminName, adminProgramId, adminPassword)) {
             System.out.println("Admin user setup complete.");
         } else {
-            System.out.println("Admin user already exists or failed to create.");
+            // Note: This often runs if the user already exists (which is fine)
+            System.out.println("Admin user already exists or failed to create (check console for error).");
         }
         
-        // 3. Test Authentication (Should succeed)
-        Student authenticatedStudent = dao.authenticateStudent("ADMIN001", adminPassword);
+        // 2. Test Authentication (Should succeed)
+        Student authenticatedStudent = dao.authenticateStudent(adminId, adminPassword);
 
         if (authenticatedStudent != null) {
             System.out.println("\n✅ Authentication SUCCESSFUL!");
@@ -25,8 +29,8 @@ public class TestDAO {
             System.out.println("\n❌ Authentication FAILED.");
         }
         
-        // 4. Test Authentication (Should fail)
-        authenticatedStudent = dao.authenticateStudent("ADMIN001", "wrongpassword");
+        // 3. Test Authentication (Should fail)
+        authenticatedStudent = dao.authenticateStudent(adminId, "wrongpassword");
         if (authenticatedStudent == null) {
             System.out.println("✅ Failed login test successful.");
         }

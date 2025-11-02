@@ -1,0 +1,87 @@
+/* =========================================================================
+   PaperVault Base Styles
+   ========================================================================= */
+
+.root {
+    -fx-background-color: #f5f5f5; /* Light gray background */
+    -fx-font-family: "Segoe UI", "Tahoma", "Verdana", sans-serif;
+}
+
+/* =========================================================================
+   Containers & Headers
+   ========================================================================= */
+
+.label-header {
+    -fx-font-size: 24px;
+    -fx-font-font-weight: bold;
+    -fx-text-fill: #2c3e50; /* Darker navy blue for headers */
+}
+
+/* Dashboard & Admin Titles */
+.label-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2980b9; /* A professional blue */
+}
+
+/* =========================================================================
+   Input Fields & Buttons
+   ========================================================================= */
+
+.text-field, .combo-box {
+    -fx-font-size: 14px;
+    -fx-padding: 8px;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.button {
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+    -fx-background-color: #3498db; /* Primary Blue */
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 20px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #2980b9;
+}
+
+/* Specific button styles */
+.button-admin {
+    -fx-background-color: #2ecc71; /* Green for Admin action */
+}
+
+.button-admin:hover {
+    -fx-background-color: #27ae60;
+}
+
+.button-view {
+    -fx-background-color: #f39c12; /* Orange for 'View PDF' */
+    -fx-padding: 5px 10px;
+}
+
+.button-view:hover {
+    -fx-background-color: #d35400;
+}
+
+/* =========================================================================
+   Table View
+   ========================================================================= */
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 5px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #ecf0f1; /* Light header background */
+}
+
+.table-view .column-header {
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER-LEFT;
+}

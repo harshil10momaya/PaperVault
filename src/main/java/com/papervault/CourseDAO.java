@@ -10,12 +10,43 @@ import java.util.List;
 public class CourseDAO {
 
     /**
-     * Fetches all courses associated with a specific program ID.
-     * This supports filtering the dashboard for the student's program.
+     * Fetches courses associated with a specific program ID and semester.
+     * Used by the Student Dashboard after semester selection.
      */
-    public List<Course> getCoursesByProgram(int programId) {
+    public List<Course> getCoursesByProgramAndSemester(int programId, int semester) {
         List<Course> courses = new ArrayList<>();
-        String sql = "SELECT course_id, program_id, course_code, course_title, semester FROM courses WHERE program_id = ?";
+        // Query filters by both the student's program (from login) and selected semester
+        String sql = "SELECT course_id, program_id, course_code, course_title, semester FROM courses WHERE program_id = ? AND semester = ? ORDER BY course_code";
+
+        try (Connection conn = DatabaseConnector.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, programId);
+            stmt.setInt(2, semester);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    courses.add(new Course(
+                        rs.getInt("course_id"),
+                        rs.getInt("program_id"),
+                        rs.getString("course_code"),
+                        rs.getString("course_title"),
+                        rs.getInt("semester")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching courses by program and semester: " + e.getMessage());
+        }
+        return courses;
+    }
+    
+    /**
+     * Fetches ALL courses for a specific program, regardless of semester.
+     * Used by the Admin Upload screen (Fixes the compilation error).
+     */
+    public List<Course> getAllCoursesByProgram(int programId) {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT course_id, program_id, course_code, course_title, semester FROM courses WHERE program_id = ? ORDER BY course_code";
 
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -33,8 +64,33 @@ public class CourseDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error fetching courses: " + e.getMessage());
+            System.err.println("Error fetching all courses by program: " + e.getMessage());
         }
         return courses;
+    }
+    
+    /**
+     * Simple lookup function to get course details by ID.
+     */
+    public Course getCourseById(int courseId) {
+        String sql = "SELECT course_id, program_id, course_code, course_title, semester FROM courses WHERE course_id = ?";
+        try (Connection conn = DatabaseConnector.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, courseId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Course(
+                        rs.getInt("course_id"),
+                        rs.getInt("program_id"),
+                        rs.getString("course_code"),
+                        rs.getString("course_title"),
+                        rs.getInt("semester")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching single course: " + e.getMessage());
+        }
+        return null;
     }
 }

@@ -6,18 +6,17 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import java.net.URL?>
 
-<VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.LoginController">
+<VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.LoginController">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
     <padding>
-        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>
 
-    <Label text="PaperVault Student Login" textFill="#2f4f4f">
-        <font>
-            <Font name="System Bold" size="24.0" />
-        </font>
-    </Label>
+    <Label styleClass="label-title" text="PaperVault Student Login" />
     <Label fx:id="messageLabel" textFill="#e01b1b" />
 
     <Label text="Student ID:" />
@@ -26,14 +25,10 @@
     <Label text="Password:" />
     <PasswordField fx:id="passwordField" promptText="Enter Password" />
 
-    <Button onAction="#handleLogin" prefWidth="200.0" text="Login">
-        <font>
-            <Font size="16.0" />
-        </font>
-    </Button>
-    <Button onAction="#handleAdminAccess" prefWidth="200.0" text="Admin Access" style="-fx-background-color: #6495ed; -fx-text-fill: white;">
-        <font>
-            <Font size="12.0" />
-        </font>
-    </Button>
+    <Button onAction="#handleLogin" prefWidth="250.0" text="Login" />
+    
+    <Button onAction="#handleSignupAccess" prefWidth="250.0" text="New Student Sign-up" style="-fx-background-color: #f39c12; -fx-text-fill: white;" />
+    
+    <Button onAction="#handleAdminAccess" prefWidth="250.0" text="Admin Access" styleClass="button-admin" />
+
 </VBox>

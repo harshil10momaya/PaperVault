@@ -5,10 +5,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import java.awt.Desktop;
+
+import java.awt.Desktop; 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the main student dashboard view (Core Feature: Paper Viewing & Access).
@@ -27,14 +29,17 @@ public class DashboardController {
     @FXML private TableColumn<PaperViewModel, Button> viewCol;
 
     private Student loggedInUser;
+    private int selectedSemester; // New field to store selected semester
     private CourseDAO courseDAO;
     private PaperDAO paperDAO;
     private List<Course> userCourses;
     private Course selectedCourse;
-
+    private ProgramDAO programDAO;
+    
     public void initialize() {
         courseDAO = new CourseDAO();
         paperDAO = new PaperDAO();
+        programDAO = new ProgramDAO();
         
         // Initialize Table Columns
         courseCodeCol.setCellValueFactory(new PropertyValueFactory<>("courseCode"));
@@ -46,38 +51,51 @@ public class DashboardController {
         // Populate Year Filter (Current year and previous 3 years as per requirement)
         int currentYear = java.time.Year.now().getValue();
         ObservableList<Integer> years = FXCollections.observableArrayList();
-        for (int i = 0; i < 4; i++) { // Current year and 3 previous years
+        for (int i = 0; i < 4; i++) { 
             years.add(currentYear - i);
         }
         yearFilter.setItems(years);
         
         // Set up search field listener to filter papers instantly
-        // Using an immediate change listener for a better experience
         searchField.textProperty().addListener((obs, oldVal, newVal) -> loadPapers());
     }
 
     /**
-     * Called by LoginController after successful login.
+     * NEW METHOD: Called by SemesterSelectController after successful login and semester choice.
      */
-    public void setLoggedInUser(Student student) {
+    public void setLoggedInUserAndSemester(Student student, int semester) {
         this.loggedInUser = student;
-        welcomeLabel.setText("Welcome, " + student.getName() + " (" + student.getStudentId() + ")");
+        this.selectedSemester = semester;
         
-        // Load courses relevant to the student's program (Core Feature: Course & Subject Mapping)
-        loadUserCourses(student.getProgramId());
+        // Look up program name for display
+        String programName = programDAO.getAllPrograms().stream()
+            .filter(p -> p.getProgramId() == student.getProgramId())
+            .findFirst()
+            .map(Program::getProgramCode)
+            .orElse("Unknown Program");
+            
+        welcomeLabel.setText(String.format("Welcome, %s (%s)! Viewing %s - Semester %d Papers.", 
+            student.getName(), student.getStudentId(), programName, semester));
+        
+        // Load courses relevant to the student's program and the selected semester
+        loadUserCourses(student.getProgramId(), semester);
     }
     
-    private void loadUserCourses(int programId) {
-        userCourses = courseDAO.getCoursesByProgram(programId);
+    /**
+     * Loads the available courses for the student's program and selected semester.
+     */
+    private void loadUserCourses(int programId, int semester) {
+        // Use the new DAO method to filter by program and semester
+        userCourses = courseDAO.getCoursesByProgramAndSemester(programId, semester);
         
         ObservableList<String> courseStrings = FXCollections.observableArrayList();
         for (Course c : userCourses) {
-            courseStrings.add(String.format("[%s] %s (Sem %d)", c.getCourseCode(), c.getCourseTitle(), c.getSemester()));
+            courseStrings.add(String.format("[%s] %s", c.getCourseCode(), c.getCourseTitle()));
         }
         
         courseSelector.setItems(courseStrings);
         courseSelector.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            // Find the selected course object
+            // Find the selected course object based on the index
             int selectedIndex = courseSelector.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0) {
                 selectedCourse = userCourses.get(selectedIndex);
@@ -88,15 +106,17 @@ public class DashboardController {
             }
         });
         
-        // Select the first course if available, for quick dashboard presentation
+        // Select the first course if available (e.g., for TCS Sem 5)
         if (!userCourses.isEmpty()) {
             courseSelector.getSelectionModel().selectFirst();
+        } else {
+            // Show a warning if no courses are found for the selected semester
+            welcomeLabel.setText("No courses found for Semester " + semester + ". Please choose another semester.");
         }
     }
     
     /**
      * Fetches and displays papers based on current selections.
-     * Implements Core Feature: Search and Filter.
      */
     @FXML
     private void loadPapers() {
@@ -118,7 +138,7 @@ public class DashboardController {
         // Map data models to view models for table display
         ObservableList<PaperViewModel> viewModels = FXCollections.observableArrayList();
         for (Paper paper : papers) {
-            // We pass the Course information explicitly here for display in the table
+            // Pass the selected Course information explicitly here for display in the table
             viewModels.add(new PaperViewModel(paper, selectedCourse, this::handleViewPaper));
         }
         
@@ -127,7 +147,6 @@ public class DashboardController {
     
     /**
      * Handles the 'View Paper' button click, opening the PDF file.
-     * Implements Core Feature: PDF Viewer Access (via system default reader).
      */
     private void handleViewPaper(String filePath) {
         File file = new File(filePath);
@@ -147,7 +166,7 @@ public class DashboardController {
     }
     
     /**
-     * Clears the Year Filter selection and reloads papers.
+     * Clears the Year Filter selection.
      */
     @FXML
     private void handleClearYearFilter() {

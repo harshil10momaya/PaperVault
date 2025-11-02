@@ -21,7 +21,7 @@ public class AdminUploadController {
     private PaperDAO paperDAO;
     private List<Course> availableCourses;
     
-    // Hardcoded Program ID for simplicity, assuming Admin manages Program ID 1 initially
+    // Hardcoded Program ID for TCS (Program ID 1 is assumed from the SQL insert)
     private static final int ADMIN_PROGRAM_ID = 1; 
 
     public void initialize() {
@@ -32,16 +32,20 @@ public class AdminUploadController {
         ObservableList<String> examTypes = FXCollections.observableArrayList("CA1", "CA2", "SEM");
         examTypeComboBox.setItems(examTypes);
 
-        // Load Courses for the ComboBox (We assume the admin belongs to Program 1)
+        // Load Courses for the ComboBox using the utility method (Fixes Error 2)
         loadCourses();
     }
 
+    /**
+     * Loads ALL available courses for the Admin's default program (TCS).
+     */
     private void loadCourses() {
-        // Fetch courses for the admin's program. For MVP, we use the first program ID (1).
-        availableCourses = courseDAO.getCoursesByProgram(ADMIN_PROGRAM_ID);
+        // Call the utility DAO method we just created
+        availableCourses = courseDAO.getAllCoursesByProgram(ADMIN_PROGRAM_ID);
         
         ObservableList<String> courseStrings = FXCollections.observableArrayList();
         for (Course c : availableCourses) {
+            // Display: [23XT51] Theory of Computing (Sem 5)
             courseStrings.add(String.format("[%s] %s (Sem %d)", c.getCourseCode(), c.getCourseTitle(), c.getSemester()));
         }
         courseComboBox.setItems(courseStrings);
@@ -76,7 +80,8 @@ public class AdminUploadController {
         int courseId = selectedCourse.getCourseId();
         int academicYear = Integer.parseInt(yearField.getText());
         String examType = examTypeComboBox.getValue();
-        String filePath = selectedFile.getAbsolutePath(); // Use the absolute path for storage
+        // Crucial: This path must be correct and accessible by the student view later.
+        String filePath = selectedFile.getAbsolutePath(); 
 
         // 2. Insert into Database
         boolean success = paperDAO.insertPaper(courseId, academicYear, examType, filePath);
@@ -98,7 +103,7 @@ public class AdminUploadController {
         try {
             int year = Integer.parseInt(yearField.getText());
             if (year < 2000 || year > 2100) { // Basic year validation
-                messageLabel.setText("Please enter a valid academic year (e.g., 2023).");
+                messageLabel.setText("Please enter a valid academic year (e.g., 2025).");
                 return false;
             }
         } catch (NumberFormatException e) {
@@ -114,5 +119,6 @@ public class AdminUploadController {
         yearField.clear();
         filePathField.clear();
         selectedFile = null;
+        // Keep the success message visible briefly
     }
 }

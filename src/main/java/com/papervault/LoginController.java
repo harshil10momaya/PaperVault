@@ -11,7 +11,6 @@ import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class LoginController {
 
@@ -21,16 +20,13 @@ public class LoginController {
 
     private StudentDAO studentDAO;
 
-    /**
-     * Initializes the controller. Called automatically after the FXML file is loaded.
-     */
     public void initialize() {
-        // Initialize the DAO layer for database interaction
         studentDAO = new StudentDAO();
     }
 
     /**
      * Handles the action when the Student Login button is pressed.
+     * Redirects to the Semester Select screen on success.
      */
     @FXML
     private void handleLogin(ActionEvent event) {
@@ -46,23 +42,43 @@ public class LoginController {
         Student student = studentDAO.authenticateStudent(studentId, password);
 
         if (student != null) {
-            // 2. Authentication Success: Move to the main dashboard
+            // 2. Authentication Success: Move to the new Semester Selection Screen
             messageLabel.setText("Login Successful! Redirecting...");
             
             try {
-                // Load the next scene and pass the student object
-                loadNextScene("/DashboardView.fxml", student); 
+                loadSemesterSelectScene("/SemesterSelectView.fxml", student); 
             } catch (IOException e) {
-                // Log the error and notify the user if the dashboard fails to load
-                System.err.println("Error loading dashboard view: " + e.getMessage());
+                System.err.println("Error loading semester select view: " + e.getMessage());
                 e.printStackTrace();
-                messageLabel.setText("System error loading dashboard.");
+                messageLabel.setText("System error loading next screen.");
             }
             
         } else {
             // 3. Authentication Failure
             messageLabel.setText("Invalid Student ID or Password.");
-            passwordField.clear(); // Clear password for security
+            passwordField.clear(); 
+        }
+    }
+
+    /**
+     * Handles the action to switch to the student sign-up screen.
+     */
+    @FXML
+    private void handleSignupAccess(ActionEvent event) {
+        try {
+            Stage currentStage = (Stage) ((Parent) studentIdField.getParent()).getScene().getWindow();
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/SignupView.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root, 600, 500);
+            currentStage.setScene(scene);
+            currentStage.setTitle("PaperVault - Student Sign-up");
+            currentStage.setResizable(false);
+            currentStage.show();
+            
+        } catch (IOException e) {
+            System.err.println("Error accessing sign-up panel: " + e.getMessage());
         }
     }
 
@@ -72,45 +88,37 @@ public class LoginController {
     @FXML
     private void handleAdminAccess(ActionEvent event) {
         try {
-            // Find the current stage (window)
             Stage currentStage = (Stage) ((Parent) studentIdField.getParent()).getScene().getWindow();
-            
-            // Load the Admin Login FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AdminLoginView.fxml"));
             Parent root = loader.load();
             
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 500, 350);
             currentStage.setScene(scene);
             currentStage.setTitle("PaperVault - Admin Login");
             currentStage.setResizable(false);
             currentStage.show();
             
         } catch (IOException e) {
-            e.printStackTrace();
-            messageLabel.setText("System error accessing admin panel.");
+            System.err.println("Error accessing admin panel: " + e.getMessage());
         }
     }
 
     /**
-     * Helper method to switch scenes and pass the authenticated student data.
+     * Helper method to switch to the Semester Selection scene.
      */
-    private void loadNextScene(String fxmlFile, Student student) throws IOException {
-        // 1. Get the current stage from the UI component
+    private void loadSemesterSelectScene(String fxmlFile, Student student) throws IOException {
         Stage currentStage = (Stage) ((Parent) studentIdField.getParent()).getScene().getWindow();
         
-        // 2. Load the next FXML
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
         Parent root = loader.load();
         
-        // 3. Get the controller for the new scene and pass the Student object
-        // This is the crucial step for personalizing the dashboard
-        DashboardController controller = loader.getController();
+        // Pass the student object to the SemesterSelectController
+        SemesterSelectController controller = loader.getController();
         controller.setLoggedInUser(student); 
         
-        // 4. Set up and show the new scene
-        Scene scene = new Scene(root, 1000, 700); // Recommended size for dashboard
+        Scene scene = new Scene(root, 600, 400); 
         currentStage.setScene(scene);
-        currentStage.setTitle("PaperVault - Dashboard for " + student.getName());
-        currentStage.setResizable(true);
+        currentStage.setTitle("PaperVault - Select Semester");
+        currentStage.setResizable(false);
     }
 }

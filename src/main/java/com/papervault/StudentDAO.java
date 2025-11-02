@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.mindrot.jbcrypt.BCrypt;
+import org.mindrot.jbcrypt.BCrypt; // Required for password hashing
 
 public class StudentDAO {
 
@@ -15,6 +15,7 @@ public class StudentDAO {
      * @return The Student object if authentication succeeds, or null otherwise.
      */
     public Student authenticateStudent(String studentId, String password) {
+        // Query to retrieve the student's data including the stored password hash
         String sql = "SELECT student_id, program_id, name, password_hash FROM students WHERE student_id = ?";
         
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
@@ -45,8 +46,15 @@ public class StudentDAO {
         return null;
     }
 
-    // Placeholder for adding a student (Admin function)
-    public boolean addStudent(Student student, String plaintextPassword) {
+    /**
+     * Signs up a new student, hashing their password for storage.
+     * @param studentId The student's unique ID/Roll Number.
+     * @param name The student's full name.
+     * @param programId The ID of the student's enrolled program.
+     * @param plaintextPassword The password chosen by the student.
+     * @return true if insertion was successful, false otherwise.
+     */
+    public boolean signUpStudent(String studentId, String name, int programId, String plaintextPassword) {
         // Hashing the password before storing it
         String hashedPassword = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
         String sql = "INSERT INTO students (student_id, program_id, name, password_hash) VALUES (?, ?, ?, ?)";
@@ -54,16 +62,19 @@ public class StudentDAO {
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, student.getStudentId());
-            stmt.setInt(2, student.getProgramId());
-            stmt.setString(3, student.getName());
+            stmt.setString(1, studentId);
+            stmt.setInt(2, programId);
+            stmt.setString(3, name);
             stmt.setString(4, hashedPassword);
 
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error adding student: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error signing up student: " + e.getMessage());
+            // Check for duplicate key errors (student_id already exists)
+            if (e.getSQLState().equals("23505")) { 
+                System.err.println("Error: Student ID already exists.");
+            }
             return false;
         }
     }
