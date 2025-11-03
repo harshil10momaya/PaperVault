@@ -1,12 +1,19 @@
 package com.papervault;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import java.util.stream.Collectors; // Needed for stream operations
 
 public class AdminUploadController {
 
@@ -15,40 +22,59 @@ public class AdminUploadController {
     @FXML private ComboBox<String> examTypeComboBox;
     @FXML private TextField filePathField;
     @FXML private Label messageLabel;
+    @FXML private Label headerLabel; // FIX 3: DECLARE the FXML Label field
 
     private File selectedFile;
     private CourseDAO courseDAO;
     private PaperDAO paperDAO;
+    private ProgramDAO programDAO; 
     private List<Course> availableCourses;
     
-    // Hardcoded Program ID for TCS (Program ID 1 is assumed from the SQL insert)
-    private static final int ADMIN_PROGRAM_ID = 1; 
+    private int selectedProgramId;
+    private int selectedSemester;
 
     public void initialize() {
         courseDAO = new CourseDAO();
         paperDAO = new PaperDAO();
+        programDAO = new ProgramDAO(); 
         
-        // Populate Exam Type ComboBox
         ObservableList<String> examTypes = FXCollections.observableArrayList("CA1", "CA2", "SEM");
         examTypeComboBox.setItems(examTypes);
-
-        // Load Courses for the ComboBox using the utility method (Fixes Error 2)
+    }
+    
+    /**
+     * Called by AdminSelectController to set the context for the upload.
+     */
+    public void setProgramAndSemester(int programId, int semester) {
+        this.selectedProgramId = programId;
+        this.selectedSemester = semester;
+        
+        // Update header label
+        String programCode = programDAO.getAllPrograms().stream()
+            .filter(p -> p.getProgramId() == programId)
+            .findFirst()
+            .map(Program::getProgramCode)
+            .orElse("Unknown");
+            
+        headerLabel.setText(String.format("Uploading Papers for %s - Semester %d", programCode, semester));
+        
         loadCourses();
     }
 
-    /**
-     * Loads ALL available courses for the Admin's default program (TCS).
-     */
     private void loadCourses() {
-        // Call the utility DAO method we just created
-        availableCourses = courseDAO.getAllCoursesByProgram(ADMIN_PROGRAM_ID);
+        if (selectedProgramId == 0) return; 
+        
+        availableCourses = courseDAO.getCoursesByProgramAndSemester(selectedProgramId, selectedSemester);
         
         ObservableList<String> courseStrings = FXCollections.observableArrayList();
         for (Course c : availableCourses) {
-            // Display: [23XT51] Theory of Computing (Sem 5)
-            courseStrings.add(String.format("[%s] %s (Sem %d)", c.getCourseCode(), c.getCourseTitle(), c.getSemester()));
+            courseStrings.add(String.format("[%s] %s", c.getCourseCode(), c.getCourseTitle()));
         }
         courseComboBox.setItems(courseStrings);
+        
+        if (availableCourses.isEmpty()) {
+            messageLabel.setText("Warning: No courses found for this Program and Semester.");
+        }
     }
 
     @FXML
@@ -68,27 +94,22 @@ public class AdminUploadController {
 
     @FXML
     private void handleUploadPaper() {
-        // 1. Validation and Data Extraction
         if (!validateInput()) {
             return;
         }
 
-        // Get selected Course object
         int selectedIndex = courseComboBox.getSelectionModel().getSelectedIndex();
         Course selectedCourse = availableCourses.get(selectedIndex);
         
         int courseId = selectedCourse.getCourseId();
         int academicYear = Integer.parseInt(yearField.getText());
         String examType = examTypeComboBox.getValue();
-        // Crucial: This path must be correct and accessible by the student view later.
         String filePath = selectedFile.getAbsolutePath(); 
 
-        // 2. Insert into Database
         boolean success = paperDAO.insertPaper(courseId, academicYear, examType, filePath);
 
         if (success) {
             messageLabel.setText("✅ Paper metadata uploaded successfully!");
-            // Reset form for next upload
             resetForm();
         } else {
             messageLabel.setText("❌ Upload Failed. Check database for constraint errors (e.g., duplicate paper).");
@@ -102,7 +123,7 @@ public class AdminUploadController {
         }
         try {
             int year = Integer.parseInt(yearField.getText());
-            if (year < 2000 || year > 2100) { // Basic year validation
+            if (year < 2000 || year > 2100) { 
                 messageLabel.setText("Please enter a valid academic year (e.g., 2025).");
                 return false;
             }
@@ -119,6 +140,27 @@ public class AdminUploadController {
         yearField.clear();
         filePathField.clear();
         selectedFile = null;
-        // Keep the success message visible briefly
+    }
+    
+    @FXML
+    private void handleLogout() {
+        try {
+            Stage currentStage = (Stage) messageLabel.getScene().getWindow();
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginView.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root, 600, 450); 
+            currentStage.setScene(scene);
+            currentStage.setTitle("PaperVault - Student Login");
+            currentStage.setResizable(false); 
+            
+            currentStage.setWidth(600);
+            currentStage.setHeight(450); 
+            currentStage.setMaximized(false);
+            
+        } catch (IOException e) {
+            System.err.println("Error during admin logout: " + e.getMessage());
+        }
     }
 }

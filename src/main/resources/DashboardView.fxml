@@ -12,8 +12,10 @@
 <?import java.net.URL?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.Priority?>
 
-<VBox alignment="TOP_CENTER" prefHeight="700.0" prefWidth="1200.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.DashboardController">
+<VBox alignment="TOP_CENTER" prefHeight="700.0" prefWidth="1200.0" spacing="15.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.DashboardController">
     <stylesheets>
         <URL value="@styles.css" />
     </stylesheets>
@@ -23,17 +25,15 @@
    
    <HBox alignment="CENTER_LEFT" spacing="20.0" VBox.vgrow="NEVER">
       <Label styleClass="label-title" text="PaperVault Student Dashboard" HBox.hgrow="ALWAYS" />
-      
-      <Button onAction="#handleBackToSemester" text="&lt; Select Semester" styleClass="button-clear" />
-      
+      <Region HBox.hgrow="ALWAYS" /> <Button onAction="#handleBackToSemester" text="&lt; Select Semester" styleClass="button-clear" />
       <Button onAction="#handleLogout" text="Logout" styleClass="button-logout" />
    </HBox>
    
    <Label fx:id="welcomeLabel" text="Welcome! Viewing papers for..." styleClass="label-subtitle" />
    
-   <TabPane VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
+   <TabPane fx:id="dashboardTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE">
       
-      <Tab text="Search Papers">
+      <Tab fx:id="searchTab" text="Search Papers">
          <content>
             <VBox alignment="TOP_CENTER" spacing="15.0">
                <padding>
@@ -73,7 +73,8 @@
                      <TableColumn fx:id="typeCol" prefWidth="80.0" text="Exam Type" />
                      <TableColumn fx:id="viewCol" prefWidth="80.0" text="View" />
                      <TableColumn fx:id="downloadCol" prefWidth="100.0" text="Download" />
-                     <TableColumn fx:id="bookmarkCol" prefWidth="120.0" text="Bookmark" /> </columns>
+                     <TableColumn fx:id="bookmarkCol" prefWidth="120.0" text="Bookmark" /> 
+                  </columns>
                   <columnResizePolicy>
                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                   </columnResizePolicy>
@@ -82,7 +83,7 @@
          </content>
       </Tab>
       
-      <Tab text="My Bookmarks" onSelectionChanged="#loadFavoritesTab">
+      <Tab fx:id="favoritesTab" text="My Bookmarks" onSelectionChanged="#loadFavoritesTab">
          <content>
             <VBox alignment="TOP_CENTER" spacing="10.0">
                <padding>

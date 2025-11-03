@@ -1,11 +1,11 @@
 package com.papervault;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -18,9 +18,8 @@ public class AdminLoginController {
     @FXML private PasswordField passwordField;
     @FXML private Label messageLabel;
     
-    // --- MVP Admin Credentials (Hardcoded for simplicity) ---
     private static final String ADMIN_USER = "admin";
-    private static final String ADMIN_PASS = "adminpass"; // CHANGE THIS LATER!
+    private static final String ADMIN_PASS = "adminpass";
 
     @FXML
     private void handleAdminLogin(ActionEvent event) {
@@ -30,7 +29,8 @@ public class AdminLoginController {
         if (username.equals(ADMIN_USER) && password.equals(ADMIN_PASS)) {
             messageLabel.setText("Admin Login Successful! Redirecting...");
             try {
-                loadAdminDashboard("/AdminUploadView.fxml");
+                // CHANGE: Load the new Admin Selection screen
+                loadAdminSelectScreen("/AdminSelectView.fxml");
             } catch (IOException e) {
                 e.printStackTrace();
                 messageLabel.setText("Error loading admin dashboard.");
@@ -41,15 +41,35 @@ public class AdminLoginController {
         }
     }
 
-    private void loadAdminDashboard(String fxmlFile) throws IOException {
+    private void loadAdminSelectScreen(String fxmlFile) throws IOException {
         Stage currentStage = (Stage) usernameField.getScene().getWindow();
         
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
         Parent root = loader.load();
         
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 650, 450); // Set scene size for the selection screen
         currentStage.setScene(scene);
-        currentStage.setTitle("PaperVault - Admin Upload");
-        currentStage.setResizable(true);
+        currentStage.setTitle("Admin Select Program/Semester");
+        currentStage.setResizable(false);
+    }
+    
+    /**
+     * Helper to return to Student Login (used by the back button on Admin Select).
+     */
+    @FXML
+    private void handleBackToLogin() {
+        try {
+            Stage currentStage = (Stage) usernameField.getScene().getWindow();
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginView.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root, 600, 450); 
+            currentStage.setScene(scene);
+            currentStage.setTitle("PaperVault - Student Login");
+            currentStage.setResizable(false); 
+        } catch (IOException e) {
+            System.err.println("Error redirecting to login view: " + e.getMessage());
+        }
     }
 }

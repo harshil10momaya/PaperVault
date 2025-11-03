@@ -8,6 +8,8 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import java.net.URL?>
 
 <VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="800.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.AdminUploadController">
@@ -15,10 +17,15 @@
         <URL value="@styles.css" />
     </stylesheets>
     <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
     </padding>
 
-    <Label styleClass="label-title" text="Upload Previous Year Paper" />
+    <HBox alignment="CENTER_LEFT" spacing="20.0">
+        <Label fx:id="headerLabel" styleClass="label-title" text="Admin Upload Portal" HBox.hgrow="ALWAYS" /> 
+        <Region HBox.hgrow="ALWAYS" />
+        <Button onAction="#handleLogout" text="Logout" styleClass="button-logout" />
+    </HBox>
+    
     <Label fx:id="messageLabel" textFill="#1e90ff" />
 
     <GridPane hgap="10.0" vgap="15.0">

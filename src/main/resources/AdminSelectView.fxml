@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import java.net.URL?>
+
+<VBox alignment="CENTER" prefHeight="450.0" prefWidth="650.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.AdminSelectController">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+        <Label styleClass="label-title" text="Admin Course Selector" HBox.hgrow="ALWAYS" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button onAction="#handleLogout" text="Logout" styleClass="button-logout" />
+    </HBox>
+    
+    <Label fx:id="messageLabel" textFill="#e01b1b" />
+    
+    <Label text="Step 1: Choose Program/Course" styleClass="label-subtitle" />
+    <ComboBox fx:id="programSelector" prefWidth="350.0" promptText="Select Program (23XT - TCS, 23XD - DS, etc.)" />
+
+    <Label text="Step 2: Choose Semester" styleClass="label-subtitle" />
+    <ComboBox fx:id="semesterSelector" prefWidth="350.0" promptText="Choose Semester (e.g., 5)" />
+
+    <Button onAction="#handleProceedToUpload" prefWidth="250.0" text="Proceed to Upload Papers" />
+</VBox>
