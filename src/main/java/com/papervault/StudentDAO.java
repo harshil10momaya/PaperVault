@@ -47,7 +47,6 @@ public class StudentDAO {
     }
 
     /**
-     * Signs up a new student, hashing their password for storage.
      * @param studentId The student's unique ID/Roll Number.
      * @param name The student's full name.
      * @param programId The ID of the student's enrolled program.
@@ -55,7 +54,6 @@ public class StudentDAO {
      * @return true if insertion was successful, false otherwise.
      */
     public boolean signUpStudent(String studentId, String name, int programId, String plaintextPassword) {
-        // Hashing the password before storing it
         String hashedPassword = BCrypt.hashpw(plaintextPassword, BCrypt.gensalt());
         String sql = "INSERT INTO students (student_id, program_id, name, password_hash) VALUES (?, ?, ?, ?)";
         

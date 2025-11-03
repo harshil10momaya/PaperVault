@@ -1,19 +1,24 @@
 package com.papervault;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 import java.awt.Desktop; 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Controller for the main student dashboard view (Core Feature: Paper Viewing & Access).
+ * Controller for the main student dashboard view.
  */
 public class DashboardController {
 
@@ -21,6 +26,7 @@ public class DashboardController {
     @FXML private ComboBox<String> courseSelector;
     @FXML private TextField searchField;
     @FXML private ComboBox<Integer> yearFilter;
+    @FXML private ComboBox<String> examTypeFilter; 
     @FXML private TableView<PaperViewModel> paperTable;
     @FXML private TableColumn<PaperViewModel, String> courseCodeCol;
     @FXML private TableColumn<PaperViewModel, String> subjectCol;
@@ -29,12 +35,12 @@ public class DashboardController {
     @FXML private TableColumn<PaperViewModel, Button> viewCol;
 
     private Student loggedInUser;
-    private int selectedSemester; // New field to store selected semester
+    private int selectedSemester; 
     private CourseDAO courseDAO;
     private PaperDAO paperDAO;
+    private ProgramDAO programDAO;
     private List<Course> userCourses;
     private Course selectedCourse;
-    private ProgramDAO programDAO;
     
     public void initialize() {
         courseDAO = new CourseDAO();
@@ -48,7 +54,7 @@ public class DashboardController {
         typeCol.setCellValueFactory(new PropertyValueFactory<>("examType"));
         viewCol.setCellValueFactory(new PropertyValueFactory<>("viewButton"));
         
-        // Populate Year Filter (Current year and previous 3 years as per requirement)
+        // Populate Year Filter (Current year and 3 previous years)
         int currentYear = java.time.Year.now().getValue();
         ObservableList<Integer> years = FXCollections.observableArrayList();
         for (int i = 0; i < 4; i++) { 
@@ -56,18 +62,21 @@ public class DashboardController {
         }
         yearFilter.setItems(years);
         
+        // Populate Exam Type Filter
+        ObservableList<String> examTypes = FXCollections.observableArrayList("CA1", "CA2", "SEM");
+        examTypeFilter.setItems(examTypes);
+        
         // Set up search field listener to filter papers instantly
         searchField.textProperty().addListener((obs, oldVal, newVal) -> loadPapers());
     }
 
     /**
-     * NEW METHOD: Called by SemesterSelectController after successful login and semester choice.
+     * Called by SemesterSelectController after successful login and semester choice.
      */
     public void setLoggedInUserAndSemester(Student student, int semester) {
         this.loggedInUser = student;
         this.selectedSemester = semester;
         
-        // Look up program name for display
         String programName = programDAO.getAllPrograms().stream()
             .filter(p -> p.getProgramId() == student.getProgramId())
             .findFirst()
@@ -77,15 +86,10 @@ public class DashboardController {
         welcomeLabel.setText(String.format("Welcome, %s (%s)! Viewing %s - Semester %d Papers.", 
             student.getName(), student.getStudentId(), programName, semester));
         
-        // Load courses relevant to the student's program and the selected semester
         loadUserCourses(student.getProgramId(), semester);
     }
     
-    /**
-     * Loads the available courses for the student's program and selected semester.
-     */
     private void loadUserCourses(int programId, int semester) {
-        // Use the new DAO method to filter by program and semester
         userCourses = courseDAO.getCoursesByProgramAndSemester(programId, semester);
         
         ObservableList<String> courseStrings = FXCollections.observableArrayList();
@@ -95,28 +99,25 @@ public class DashboardController {
         
         courseSelector.setItems(courseStrings);
         courseSelector.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            // Find the selected course object based on the index
             int selectedIndex = courseSelector.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0) {
                 selectedCourse = userCourses.get(selectedIndex);
-                loadPapers(); // Load papers immediately when a course is selected
+                loadPapers(); 
             } else {
                 selectedCourse = null;
                 paperTable.getItems().clear();
             }
         });
         
-        // Select the first course if available (e.g., for TCS Sem 5)
         if (!userCourses.isEmpty()) {
             courseSelector.getSelectionModel().selectFirst();
         } else {
-            // Show a warning if no courses are found for the selected semester
-            welcomeLabel.setText("No courses found for Semester " + semester + ". Please choose another semester.");
+            welcomeLabel.setText("No courses found for Semester " + semester + ". Please select a different semester.");
         }
     }
     
     /**
-     * Fetches and displays papers based on current selections.
+     * Fetches and displays papers based on current selections and filters.
      */
     @FXML
     private void loadPapers() {
@@ -126,33 +127,28 @@ public class DashboardController {
         }
 
         Integer selectedYear = yearFilter.getValue();
+        String selectedExamType = examTypeFilter.getValue(); 
         String searchTerm = searchField.getText();
         
-        // Call DAO with filter criteria
         List<Paper> papers = paperDAO.getPapersByCriteria(
             selectedCourse.getCourseId(), 
             selectedYear, 
+            selectedExamType, 
             searchTerm
         );
         
-        // Map data models to view models for table display
         ObservableList<PaperViewModel> viewModels = FXCollections.observableArrayList();
         for (Paper paper : papers) {
-            // Pass the selected Course information explicitly here for display in the table
             viewModels.add(new PaperViewModel(paper, selectedCourse, this::handleViewPaper));
         }
         
         paperTable.setItems(viewModels);
     }
     
-    /**
-     * Handles the 'View Paper' button click, opening the PDF file.
-     */
     private void handleViewPaper(String filePath) {
         File file = new File(filePath);
         if (file.exists() && Desktop.isDesktopSupported()) {
             try {
-                // Open the file using the system's default PDF reader
                 Desktop.getDesktop().open(file);
             } catch (IOException e) {
                 System.err.println("Error opening file: " + e.getMessage());
@@ -166,11 +162,70 @@ public class DashboardController {
     }
     
     /**
+     * Handles returning to the Semester Selection screen.
+     */
+    @FXML
+    private void handleBackToSemester() {
+        try {
+            Stage currentStage = (Stage) welcomeLabel.getScene().getWindow();
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/SemesterSelectView.fxml"));
+            Parent root = loader.load();
+            
+            SemesterSelectController controller = loader.getController();
+            controller.setLoggedInUser(loggedInUser); 
+            
+            Scene scene = new Scene(root, 600, 400); 
+            currentStage.setScene(scene);
+            currentStage.setTitle("PaperVault - Select Semester");
+            currentStage.setResizable(true); 
+            
+        } catch (IOException e) {
+            System.err.println("Error during navigation back to semester select: " + e.getMessage());
+        }
+    }
+
+    /**
      * Clears the Year Filter selection.
      */
     @FXML
     private void handleClearYearFilter() {
         yearFilter.getSelectionModel().clearSelection();
         loadPapers();
+    }
+    
+    /**
+     * Clears the Exam Type Filter selection.
+     */
+    @FXML
+    private void handleClearExamFilter() {
+        examTypeFilter.getSelectionModel().clearSelection();
+        loadPapers();
+    }
+    
+    /**
+     * FIX: Handles the logout action, explicitly resetting the stage size.
+     */
+    @FXML
+    private void handleLogout() {
+        try {
+            Stage currentStage = (Stage) welcomeLabel.getScene().getWindow();
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginView.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root, 600, 400); 
+            currentStage.setScene(scene);
+            currentStage.setTitle("PaperVault - Student Login");
+            currentStage.setResizable(false); 
+            
+            // FIX: Explicitly set size to ensure full rendering of the Login View
+            currentStage.setWidth(600);
+            currentStage.setHeight(400); 
+            
+            currentStage.show();
+        } catch (IOException e) {
+            System.err.println("Error during logout: " + e.getMessage());
+        }
     }
 }

@@ -26,7 +26,6 @@ public class LoginController {
 
     /**
      * Handles the action when the Student Login button is pressed.
-     * Redirects to the Semester Select screen on success.
      */
     @FXML
     private void handleLogin(ActionEvent event) {
@@ -38,14 +37,13 @@ public class LoginController {
             return;
         }
 
-        // 1. Call the DAO to attempt authentication
         Student student = studentDAO.authenticateStudent(studentId, password);
 
         if (student != null) {
-            // 2. Authentication Success: Move to the new Semester Selection Screen
             messageLabel.setText("Login Successful! Redirecting...");
             
             try {
+                // Redirect to Semester Selection Screen
                 loadSemesterSelectScene("/SemesterSelectView.fxml", student); 
             } catch (IOException e) {
                 System.err.println("Error loading semester select view: " + e.getMessage());
@@ -54,7 +52,6 @@ public class LoginController {
             }
             
         } else {
-            // 3. Authentication Failure
             messageLabel.setText("Invalid Student ID or Password.");
             passwordField.clear(); 
         }
@@ -105,6 +102,7 @@ public class LoginController {
 
     /**
      * Helper method to switch to the Semester Selection scene.
+     * FIX: Sets current stage to resizable.
      */
     private void loadSemesterSelectScene(String fxmlFile, Student student) throws IOException {
         Stage currentStage = (Stage) ((Parent) studentIdField.getParent()).getScene().getWindow();
@@ -112,13 +110,13 @@ public class LoginController {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
         Parent root = loader.load();
         
-        // Pass the student object to the SemesterSelectController
         SemesterSelectController controller = loader.getController();
         controller.setLoggedInUser(student); 
         
         Scene scene = new Scene(root, 600, 400); 
         currentStage.setScene(scene);
         currentStage.setTitle("PaperVault - Select Semester");
-        currentStage.setResizable(false);
+        // FIX: Allow resizing the window from here
+        currentStage.setResizable(true); 
     }
 }

@@ -1,70 +1,116 @@
 /* =========================================================================
-   PaperVault Base Styles
+   PaperVault Base Styles (Colorful and Modern)
    ========================================================================= */
 
 .root {
-    -fx-background-color: #f5f5f5; /* Light gray background */
-    -fx-font-family: "Segoe UI", "Tahoma", "Verdana", sans-serif;
+    -fx-background-color: #ecf0f1; /* Light gray background */
+    -fx-font-family: "Poppins", "Segoe UI", sans-serif; /* Using a modern font */
+    -fx-font-size: 14px;
 }
 
 /* =========================================================================
-   Containers & Headers
+   Headers & Titles
    ========================================================================= */
 
-.label-header {
-    -fx-font-size: 24px;
-    -fx-font-font-weight: bold;
-    -fx-text-fill: #2c3e50; /* Darker navy blue for headers */
+.label-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1abc9c; /* Bright Teal/Turquoise */
+    -fx-padding: 0 0 10px 0;
 }
 
-/* Dashboard & Admin Titles */
-.label-title {
-    -fx-font-size: 30px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #2980b9; /* A professional blue */
+.label-subtitle {
+    -fx-font-size: 16px;
+    -fx-text-fill: #34495e; /* Dark Contrast */
+    -fx-font-weight: 500;
 }
 
 /* =========================================================================
-   Input Fields & Buttons
+   Inputs & Combos
    ========================================================================= */
 
 .text-field, .combo-box {
     -fx-font-size: 14px;
-    -fx-padding: 8px;
     -fx-border-color: #bdc3c7;
+    -fx-border-width: 1px;
     -fx-border-radius: 4px;
     -fx-background-radius: 4px;
+    -fx-background-color: white;
 }
+
+.text-field, .combo-box .list-cell {
+    -fx-padding: 8px 10px;
+}
+
+/* FIX: Ensure the main selected text in the ComboBox is visible (dark) */
+.combo-box-base, .combo-box-base .text, .combo-box-base:editable .text {
+    -fx-fill: #34495e; 
+    -fx-text-fill: #34495e; 
+}
+
+/* Ensure selected item in the dropdown list is visible */
+.combo-box-popup .list-view .list-cell:filled:selected, 
+.combo-box-popup .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: #3498db; 
+    -fx-text-fill: white;
+}
+
+
+/* =========================================================================
+   Buttons (Brighter Colors)
+   ========================================================================= */
 
 .button {
     -fx-font-size: 14px;
     -fx-text-fill: white;
-    -fx-background-color: #3498db; /* Primary Blue */
-    -fx-background-radius: 5px;
+    -fx-background-color: #3498db; /* Bright Blue (Primary Action) */
+    -fx-background-radius: 4px;
     -fx-padding: 8px 20px;
     -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0.0, 0, 1);
+    -fx-border-color: transparent;
 }
 
 .button:hover {
     -fx-background-color: #2980b9;
 }
 
-/* Specific button styles */
 .button-admin {
-    -fx-background-color: #2ecc71; /* Green for Admin action */
+    -fx-background-color: #2ecc71; /* Vivid Green */
 }
 
 .button-admin:hover {
     -fx-background-color: #27ae60;
 }
 
-.button-view {
-    -fx-background-color: #f39c12; /* Orange for 'View PDF' */
-    -fx-padding: 5px 10px;
+/* View PDF Button (Table) - More prominent */
+.view-button {
+    -fx-background-color: #f1c40f; /* Bright Yellow */
+    -fx-text-fill: #34495e; /* Dark text for contrast */
+    -fx-padding: 4px 8px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
 }
 
-.button-view:hover {
-    -fx-background-color: #d35400;
+.view-button:hover {
+    -fx-background-color: #f39c12;
+}
+
+/* Logout Button */
+.button-logout {
+    -fx-background-color: #e74c3c; /* Red */
+    -fx-padding: 8px 15px;
+    -fx-font-weight: bold;
+}
+.button-logout:hover {
+    -fx-background-color: #c0392b;
+}
+
+/* Clear Filter Button */
+.button-clear {
+    -fx-background-color: #bdc3c7; /* Light Grey */
+    -fx-text-fill: #34495e;
+    -fx-padding: 8px 10px;
 }
 
 /* =========================================================================
@@ -72,16 +118,24 @@
    ========================================================================= */
 
 .table-view {
-    -fx-background-color: transparent;
+    -fx-background-color: white;
     -fx-border-color: #bdc3c7;
     -fx-border-radius: 5px;
 }
 
 .table-view .column-header-background {
-    -fx-background-color: #ecf0f1; /* Light header background */
+    -fx-background-color: #dce1e5; /* Light header background */
 }
 
 .table-view .column-header {
     -fx-font-weight: bold;
     -fx-alignment: CENTER-LEFT;
+    -fx-text-fill: #34495e;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f9f9f9;
+}
+.table-row-cell:selected {
+    -fx-background-color: #3498db66; /* Light transparent blue on select */
 }

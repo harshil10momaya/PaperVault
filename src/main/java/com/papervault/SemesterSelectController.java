@@ -32,6 +32,10 @@ public class SemesterSelectController {
         welcomeLabel.setText("Hello, " + student.getName() + "! Which semester's papers are you looking for?");
     }
     
+    /**
+     * Handles proceeding to the main Dashboard.
+     * FIX: Ensures the Dashboard stage is maximized for 'full screen'.
+     */
     @FXML
     private void handleProceedToDashboard() {
         Integer selectedSemester = semesterSelector.getValue();
@@ -45,13 +49,17 @@ public class SemesterSelectController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DashboardView.fxml"));
             Parent root = loader.load();
             
-            // Pass BOTH the student and the selected semester to the Dashboard Controller
             DashboardController controller = loader.getController();
             controller.setLoggedInUserAndSemester(loggedInUser, selectedSemester); 
             
-            Scene scene = new Scene(root, 1200, 750);
+            // Use a large starting size
+            Scene scene = new Scene(root, 1200, 800); 
             currentStage.setScene(scene);
             currentStage.setTitle("PaperVault - Semester " + selectedSemester + " Papers");
+            currentStage.setResizable(true);
+            
+            currentStage.setMaximized(true); 
+
         } catch (IOException e) {
             System.err.println("Error loading Dashboard View: " + e.getMessage());
             e.printStackTrace();

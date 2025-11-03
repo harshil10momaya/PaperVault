@@ -8,16 +8,7 @@ import java.util.List;
 public class PaperDAO {
     
     // --- Admin Function: Insert New Paper Metadata ---
-    /**
-     * Inserts metadata for a new paper into the database.
-     * @param courseId The ID of the associated course.
-     * @param academicYear The year the exam was held.
-     * @param examType The type of exam ('CA1', 'CA2', 'SEM').
-     * @param filePath The local file path where the PDF is stored.
-     * @return true if insertion was successful, false otherwise.
-     */
     public boolean insertPaper(int courseId, int academicYear, String examType, String filePath) {
-        // Note: upload_date is handled automatically by the DEFAULT NOW() in the table
         String sql = "INSERT INTO papers (course_id, academic_year, exam_type, file_path) VALUES (?, ?, ?, ?)";
         
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
@@ -39,36 +30,55 @@ public class PaperDAO {
 
     // --- Student Function: Retrieve Papers for Display ---
     /**
-     * Retrieves papers based on a given course ID, year, and search term.
-     * Used for the main Paper Viewing & Access feature (Core Feature).
+     * Retrieves papers based on a given course ID, year, exam type, and search term.
+     * NEW: Added examType parameter.
      */
-    public List<Paper> getPapersByCriteria(int courseId, Integer year, String searchTerm) {
+    public List<Paper> getPapersByCriteria(int courseId, Integer year, String examType, String searchTerm) {
         List<Paper> papers = new ArrayList<>();
-        // Base query to fetch paper metadata along with Course Code/Title for display
+        // Base query
         String sql = "SELECT p.*, c.course_code, c.course_title FROM papers p JOIN courses c ON p.course_id = c.course_id WHERE p.course_id = ?";
         
+        // Dynamic parameter list to build the PreparedStatement
+        int currentParam = 1;
+
         // Add optional filtering by year
         if (year != null) {
-            sql += " AND p.academic_year = " + year;
+            sql += " AND p.academic_year = ?";
+        }
+        
+        // ADDED: Optional filtering by exam type
+        if (examType != null && !examType.isEmpty()) {
+            sql += " AND p.exam_type = ?";
         }
         
         // Add optional filtering by search term (Subject Name or Code)
-        // Note: For MVP, we search by Course Code/Title.
         if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-            sql += " AND (c.course_code ILIKE ? OR c.course_title ILIKE ?)"; // ILIKE for case-insensitive search in Postgres
+            sql += " AND (c.course_code ILIKE ? OR c.course_title ILIKE ?)";
         }
+        
+        sql += " ORDER BY p.academic_year DESC, p.upload_date DESC";
 
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, courseId);
-            int paramIndex = 2;
+            // Set mandatory parameter
+            stmt.setInt(currentParam++, courseId);
+            
+            // Set optional parameters in order they appear in the SQL string
+            if (year != null) {
+                stmt.setInt(currentParam++, year);
+            }
+            if (examType != null && !examType.isEmpty()) {
+                stmt.setString(currentParam++, examType);
+            }
+            
             if (searchTerm != null && !searchTerm.trim().isEmpty()) {
                 // Set parameters for the ILIKE clauses
-                stmt.setString(paramIndex++, "%" + searchTerm + "%"); 
-                stmt.setString(paramIndex++, "%" + searchTerm + "%");
+                stmt.setString(currentParam++, "%" + searchTerm + "%"); 
+                stmt.setString(currentParam++, "%" + searchTerm + "%");
             }
-
+            
+            // --- Execute Query ---
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     papers.add(new Paper(
@@ -82,7 +92,7 @@ public class PaperDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error retrieving papers: " + e.getMessage());
+            System.err.println("Error retrieving papers with criteria: " + e.getMessage());
         }
         return papers;
     }

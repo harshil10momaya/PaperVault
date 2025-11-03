@@ -14,8 +14,6 @@ public class PaperVaultApp extends Application {
     public void start(Stage stage) throws Exception {
         // Load the Login Screen
         try {
-            // FIX: Using absolute path from the root of the classpath (/) 
-            // to ensure the FXML file is found, even when run via Maven.
             FXMLLoader fxmlLoader = new FXMLLoader(PaperVaultApp.class.getResource("/LoginView.fxml"));
             Parent root = fxmlLoader.load();
             
@@ -24,6 +22,11 @@ public class PaperVaultApp extends Application {
             stage.setTitle("PaperVault - Student Login");
             stage.setScene(scene);
             stage.setResizable(false);
+            
+            // FIX: Explicitly set the size at launch to match FXML height
+            stage.setWidth(600); 
+            stage.setHeight(450); 
+            
             stage.show();
             
         } catch (IOException e) {
@@ -33,7 +36,6 @@ public class PaperVaultApp extends Application {
     }
 
     public static void main(String[] args) {
-        // Standard entry point for a JavaFX application
         launch(args);
     }
 }

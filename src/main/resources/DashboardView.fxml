@@ -11,36 +11,50 @@
 <?import javafx.scene.layout.VBox?>
 <?import java.net.URL?>
 
-<VBox alignment="TOP_CENTER" prefHeight="700.0" prefWidth="1200.0" spacing="15.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.DashboardController">
+<VBox alignment="TOP_CENTER" prefHeight="700.0" prefWidth="1200.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.DashboardController">
     <stylesheets>
         <URL value="@styles.css" />
     </stylesheets>
    <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+      <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
    </padding>
-   <Label styleClass="label-title" text="PaperVault Student Dashboard" />
-   <Label fx:id="welcomeLabel" text="Welcome!" textFill="#4682b4">
-      <VBox.margin>
-         <Insets bottom="10.0" top="10.0" />
-      </VBox.margin>
-   </Label>
+   
+   <HBox alignment="CENTER_LEFT" spacing="20.0" VBox.vgrow="NEVER">
+      <Label styleClass="label-title" text="PaperVault Student Dashboard" HBox.hgrow="ALWAYS" />
+      
+      <Button onAction="#handleBackToSemester" text="&lt; Select Semester" styleClass="button-clear" />
+      
+      <Button onAction="#handleLogout" text="Logout" styleClass="button-logout" />
+   </HBox>
+   
+   <Label fx:id="welcomeLabel" text="Welcome! Viewing papers for..." styleClass="label-subtitle" />
    
     <HBox alignment="CENTER_LEFT" spacing="15.0" VBox.vgrow="NEVER">
-        <Label text="Filter by Course:" />
-        <ComboBox fx:id="courseSelector" prefWidth="300.0" promptText="Select your Subject" />
-        
-        <Label text="Year:" />
-        <ComboBox fx:id="yearFilter" prefWidth="100.0" promptText="Any Year" onAction="#loadPapers" />
-        <Button text="Clear Year" onAction="#handleClearYearFilter" />
+        <Label text="Subject Selection:" />
+        <ComboBox fx:id="courseSelector" prefWidth="500.0" promptText="Choose a Subject to View Papers" />
     </HBox>
 
-    <HBox alignment="CENTER_LEFT" spacing="15.0" VBox.vgrow="NEVER">
-        <Label text="Search (Code/Title):" />
-        <TextField fx:id="searchField" prefWidth="400.0" promptText="Search by Subject Name or Code" />
-        <Button mnemonicParsing="false" onAction="#loadPapers" text="Apply Search" />
+    <HBox alignment="CENTER_LEFT" spacing="25.0" VBox.vgrow="NEVER">
+        
+        <HBox alignment="CENTER_LEFT" spacing="5.0">
+            <Label text="Year Filter:" />
+            <ComboBox fx:id="yearFilter" prefWidth="100.0" promptText="All Years" onAction="#loadPapers" />
+            <Button text="Clear" onAction="#handleClearYearFilter" styleClass="button-clear" />
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="5.0">
+            <Label text="Exam Type:" />
+            <ComboBox fx:id="examTypeFilter" prefWidth="120.0" promptText="All Types" onAction="#loadPapers" />
+            <Button text="Clear" onAction="#handleClearExamFilter" styleClass="button-clear" />
+        </HBox>
+        
+        <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+            <Label text="Quick Search:" />
+            <TextField fx:id="searchField" prefWidth="300.0" promptText="Search by Subject Name or Code" HBox.hgrow="ALWAYS" />
+        </HBox>
     </HBox>
     
-    <TableView fx:id="paperTable" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+    <TableView fx:id="paperTable" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" styleClass="table-view">
         <columns>
             <TableColumn fx:id="courseCodeCol" prefWidth="100.0" text="Code" />
             <TableColumn fx:id="subjectCol" prefWidth="450.0" text="Subject Name" />
