@@ -60,7 +60,9 @@
             <TableColumn fx:id="subjectCol" prefWidth="450.0" text="Subject Name" />
             <TableColumn fx:id="yearCol" prefWidth="80.0" text="Year" />
             <TableColumn fx:id="typeCol" prefWidth="100.0" text="Exam Type" />
-            <TableColumn fx:id="viewCol" prefWidth="120.0" text="Access" />
+            <TableColumn fx:id="viewCol" prefWidth="120.0" text="View" />
+            
+            <TableColumn fx:id="downloadCol" prefWidth="120.0" text="Download" /> 
         </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

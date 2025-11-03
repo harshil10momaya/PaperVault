@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser; // Required for file chooser dialog
 
 import java.awt.Desktop; 
 import java.io.File;
@@ -33,6 +34,7 @@ public class DashboardController {
     @FXML private TableColumn<PaperViewModel, String> yearCol;
     @FXML private TableColumn<PaperViewModel, String> typeCol;
     @FXML private TableColumn<PaperViewModel, Button> viewCol;
+    @FXML private TableColumn<PaperViewModel, Button> downloadCol; // NEW FXML FIELD
 
     private Student loggedInUser;
     private int selectedSemester; 
@@ -53,6 +55,7 @@ public class DashboardController {
         yearCol.setCellValueFactory(new PropertyValueFactory<>("academicYear"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("examType"));
         viewCol.setCellValueFactory(new PropertyValueFactory<>("viewButton"));
+        downloadCol.setCellValueFactory(new PropertyValueFactory<>("downloadButton")); // NEW INITIALIZATION
         
         // Populate Year Filter (Current year and 3 previous years)
         int currentYear = java.time.Year.now().getValue();
@@ -139,7 +142,10 @@ public class DashboardController {
         
         ObservableList<PaperViewModel> viewModels = FXCollections.observableArrayList();
         for (Paper paper : papers) {
-            viewModels.add(new PaperViewModel(paper, selectedCourse, this::handleViewPaper));
+            // Updated to pass the download handler method
+            viewModels.add(new PaperViewModel(paper, selectedCourse, 
+                                              this::handleViewPaper, 
+                                              this::handleDownloadPaper)); 
         }
         
         paperTable.setItems(viewModels);
@@ -162,8 +168,55 @@ public class DashboardController {
     }
     
     /**
-     * Handles returning to the Semester Selection screen.
+     * Handles the 'Download' button click, copying the file to a location chosen by the user.
      */
+    private void handleDownloadPaper(String sourceFilePath, String courseCode, String examType) {
+        File sourceFile = new File(sourceFilePath);
+        
+        if (!sourceFile.exists()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Source file not found.", ButtonType.OK);
+            alert.showAndWait();
+            return;
+        }
+
+        // 1. Open FileChooser for destination
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Previous Year Paper");
+        
+        // Suggest a filename (e.g., 23XT51_CA1_2025.pdf)
+        String suggestedFileName = String.format("%s_%s_%d.pdf", 
+                                                courseCode, 
+                                                examType, 
+                                                yearFilter.getValue() != null ? yearFilter.getValue() : java.time.Year.now().getValue());
+        fileChooser.setInitialFileName(suggestedFileName);
+        
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+
+        // Show save dialog
+        Stage stage = (Stage) paperTable.getScene().getWindow();
+        File destinationFile = fileChooser.showSaveDialog(stage);
+
+        if (destinationFile != null) {
+            try {
+                // 2. Perform the file copy
+                java.nio.file.Files.copy(sourceFile.toPath(), destinationFile.toPath(), 
+                                         java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                                         
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, 
+                                        "Download successful! File saved to:\n" + destinationFile.getAbsolutePath(), 
+                                        ButtonType.OK);
+                alert.showAndWait();
+                
+            } catch (IOException e) {
+                System.err.println("Error copying file: " + e.getMessage());
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Download failed due to file system error.", ButtonType.OK);
+                alert.showAndWait();
+            }
+        }
+    }
+    
+    // --- Navigation and Filter Handlers ---
+    
     @FXML
     private void handleBackToSemester() {
         try {
@@ -185,27 +238,18 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Clears the Year Filter selection.
-     */
     @FXML
     private void handleClearYearFilter() {
         yearFilter.getSelectionModel().clearSelection();
         loadPapers();
     }
     
-    /**
-     * Clears the Exam Type Filter selection.
-     */
     @FXML
     private void handleClearExamFilter() {
         examTypeFilter.getSelectionModel().clearSelection();
         loadPapers();
     }
     
-    /**
-     * FIX: Handles the logout action, explicitly resetting the stage size.
-     */
     @FXML
     private void handleLogout() {
         try {
@@ -214,14 +258,13 @@ public class DashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginView.fxml"));
             Parent root = loader.load();
             
-            Scene scene = new Scene(root, 600, 400); 
+            Scene scene = new Scene(root, 600, 450); 
             currentStage.setScene(scene);
             currentStage.setTitle("PaperVault - Student Login");
             currentStage.setResizable(false); 
             
-            // FIX: Explicitly set size to ensure full rendering of the Login View
             currentStage.setWidth(600);
-            currentStage.setHeight(400); 
+            currentStage.setHeight(450); 
             
             currentStage.show();
         } catch (IOException e) {
