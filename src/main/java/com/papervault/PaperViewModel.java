@@ -3,14 +3,20 @@ package com.papervault;
 import javafx.scene.control.Button;
 import java.util.function.Consumer;
 
-// Custom interface needed to pass three arguments (filePath, courseCode, examType)
+// Custom interface needed for the download action
 @FunctionalInterface
 interface TriConsumer<T, U, V> {
     void accept(T t, U u, V v);
 }
 
+// Custom interface for the bookmark toggle: (PaperID, isCurrentlyFavorited) -> Boolean Success
+@FunctionalInterface
+interface BookmarkToggleHandler {
+    boolean toggle(int paperId, boolean isFavorited);
+}
+
 /**
- * ViewModel for displaying Paper data in the TableView and handling the view/download action.
+ * ViewModel for displaying Paper data in the TableView and handling actions.
  */
 public class PaperViewModel {
     private final int paperId;
@@ -19,15 +25,18 @@ public class PaperViewModel {
     private final int academicYear;
     private final String examType;
     private final Button viewButton;
-    private final Button downloadButton; // NEW FIELD
+    private final Button downloadButton; 
+    private final Button bookmarkButton; // NEW FIELD
     private final String filePath;
+    private boolean isFavorited;
 
     /**
-     * Constructor accepts handlers for both View (Consumer) and Download (TriConsumer).
+     * Constructor accepts handlers for View, Download, and BookmarkToggle.
      */
-    public PaperViewModel(Paper paper, Course course, 
+    public PaperViewModel(Paper paper, Course course, boolean isFavorited, 
                           Consumer<String> viewAction, 
-                          TriConsumer<String, String, String> downloadAction) { 
+                          TriConsumer<String, String, String> downloadAction,
+                          BookmarkToggleHandler bookmarkAction) { 
         
         this.paperId = paper.getPaperId();
         this.courseCode = course.getCourseCode(); 
@@ -35,19 +44,41 @@ public class PaperViewModel {
         this.academicYear = paper.getAcademicYear();
         this.examType = paper.getExamType();
         this.filePath = paper.getFilePath();
+        this.isFavorited = isFavorited; // Status from DAO check
 
         // Create View Button
         this.viewButton = new Button("View PDF");
         this.viewButton.getStyleClass().add("view-button"); 
         this.viewButton.setOnAction(event -> viewAction.accept(this.filePath));
         
-        // NEW: Create Download Button
+        // Create Download Button
         this.downloadButton = new Button("Download");
         this.downloadButton.getStyleClass().add("button"); 
-        
-        // Link the button to the download handler, passing the necessary metadata
         this.downloadButton.setOnAction(event -> 
             downloadAction.accept(this.filePath, this.courseCode, this.examType)); 
+            
+        // NEW: Create Bookmark Button
+        this.bookmarkButton = new Button(isFavorited ? "★ Bookmarked" : "☆ Bookmark");
+        this.bookmarkButton.getStyleClass().add(isFavorited ? "bookmark-active" : "bookmark-inactive"); 
+
+        this.bookmarkButton.setOnAction(event -> {
+            boolean success = bookmarkAction.toggle(this.paperId, this.isFavorited);
+            if (success) {
+                // Update local state and button style immediately on success
+                this.isFavorited = !this.isFavorited;
+                updateBookmarkButtonStyle();
+            }
+        });
+    }
+    
+    private void updateBookmarkButtonStyle() {
+        if (this.isFavorited) {
+            this.bookmarkButton.setText("★ Bookmarked");
+            this.bookmarkButton.getStyleClass().setAll("button", "bookmark-active");
+        } else {
+            this.bookmarkButton.setText("☆ Bookmark");
+            this.bookmarkButton.getStyleClass().setAll("button", "bookmark-inactive");
+        }
     }
     
     // --- Getters (Required by TableView PropertyValueFactory) ---
@@ -57,6 +88,7 @@ public class PaperViewModel {
     public int getAcademicYear() { return academicYear; }
     public String getExamType() { return examType; }
     public Button getViewButton() { return viewButton; }
-    public Button getDownloadButton() { return downloadButton; } // NEW GETTER
+    public Button getDownloadButton() { return downloadButton; }
+    public Button getBookmarkButton() { return bookmarkButton; } // NEW GETTER
     public String getFilePath() { return filePath; }
 }

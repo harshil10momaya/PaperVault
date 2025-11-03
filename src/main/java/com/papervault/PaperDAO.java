@@ -29,29 +29,20 @@ public class PaperDAO {
     }
 
     // --- Student Function: Retrieve Papers for Display ---
-    /**
-     * Retrieves papers based on a given course ID, year, exam type, and search term.
-     * NEW: Added examType parameter.
-     */
     public List<Paper> getPapersByCriteria(int courseId, Integer year, String examType, String searchTerm) {
         List<Paper> papers = new ArrayList<>();
-        // Base query
         String sql = "SELECT p.*, c.course_code, c.course_title FROM papers p JOIN courses c ON p.course_id = c.course_id WHERE p.course_id = ?";
         
-        // Dynamic parameter list to build the PreparedStatement
         int currentParam = 1;
 
-        // Add optional filtering by year
         if (year != null) {
             sql += " AND p.academic_year = ?";
         }
         
-        // ADDED: Optional filtering by exam type
         if (examType != null && !examType.isEmpty()) {
             sql += " AND p.exam_type = ?";
         }
         
-        // Add optional filtering by search term (Subject Name or Code)
         if (searchTerm != null && !searchTerm.trim().isEmpty()) {
             sql += " AND (c.course_code ILIKE ? OR c.course_title ILIKE ?)";
         }
@@ -61,10 +52,8 @@ public class PaperDAO {
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            // Set mandatory parameter
             stmt.setInt(currentParam++, courseId);
             
-            // Set optional parameters in order they appear in the SQL string
             if (year != null) {
                 stmt.setInt(currentParam++, year);
             }
@@ -73,12 +62,10 @@ public class PaperDAO {
             }
             
             if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-                // Set parameters for the ILIKE clauses
                 stmt.setString(currentParam++, "%" + searchTerm + "%"); 
                 stmt.setString(currentParam++, "%" + searchTerm + "%");
             }
             
-            // --- Execute Query ---
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     papers.add(new Paper(
@@ -95,5 +82,25 @@ public class PaperDAO {
             System.err.println("Error retrieving papers with criteria: " + e.getMessage());
         }
         return papers;
+    }
+    
+    /**
+     * NEW METHOD: Checks if a paper is in a specific student's favorites list.
+     */
+    public boolean isFavorited(String studentId, int paperId) {
+        String sql = "SELECT 1 FROM favorites WHERE student_id = ? AND paper_id = ?";
+        try (Connection conn = DatabaseConnector.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, studentId);
+            stmt.setInt(2, paperId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next(); 
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking favorite status: " + e.getMessage());
+            return false;
+        }
     }
 }
