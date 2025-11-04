@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class AdminSelectController {
-    
     @FXML private ComboBox<Program> programSelector;
     @FXML private ComboBox<Integer> semesterSelector;
     @FXML private Label messageLabel;
@@ -25,12 +24,10 @@ public class AdminSelectController {
     public void initialize() {
         programDAO = new ProgramDAO();
         
-        // 1. Populate Program Selector
         availablePrograms = programDAO.getAllPrograms();
         programSelector.setItems(FXCollections.observableArrayList(availablePrograms));
         
-        // 2. Populate Semester Selector
-        semesterSelector.setItems(FXCollections.observableArrayList(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8)));
+        semesterSelector.setItems(FXCollections.observableArrayList(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)));
     }
     
     @FXML
@@ -49,16 +46,14 @@ public class AdminSelectController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AdminUploadView.fxml"));
             Parent root = loader.load();
             
-            // Pass the selected criteria to the upload controller
             AdminUploadController controller = loader.getController();
             controller.setProgramAndSemester(selectedProgram.getProgramId(), selectedSemester); 
             
-            Scene scene = new Scene(root, 1000, 700); // Set a good default size
+            Scene scene = new Scene(root, 1000, 700);
             currentStage.setScene(scene);
             currentStage.setTitle("Admin Upload - " + selectedProgram.getProgramCode() + " Sem " + selectedSemester);
             currentStage.setResizable(true);
             
-            // FIX 1: Maximize the window for a full-size experience
             currentStage.setMaximized(true); 
 
         } catch (IOException e) {
@@ -70,7 +65,6 @@ public class AdminSelectController {
     
     @FXML
     private void handleLogout() {
-        // ... (Logout logic remains the same) ...
         try {
             Stage currentStage = (Stage) programSelector.getScene().getWindow();
             
@@ -83,7 +77,7 @@ public class AdminSelectController {
             currentStage.setResizable(false); 
             currentStage.setWidth(600);
             currentStage.setHeight(450); 
-            currentStage.setMaximized(false); // Ensure main login isn't maximized
+            currentStage.setMaximized(false);
             
         } catch (IOException e) {
             System.err.println("Error during admin logout: " + e.getMessage());

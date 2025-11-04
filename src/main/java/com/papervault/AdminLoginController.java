@@ -29,7 +29,6 @@ public class AdminLoginController {
         if (username.equals(ADMIN_USER) && password.equals(ADMIN_PASS)) {
             messageLabel.setText("Admin Login Successful! Redirecting...");
             try {
-                // CHANGE: Load the new Admin Selection screen
                 loadAdminSelectScreen("/AdminSelectView.fxml");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -47,15 +46,12 @@ public class AdminLoginController {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
         Parent root = loader.load();
         
-        Scene scene = new Scene(root, 650, 450); // Set scene size for the selection screen
+        Scene scene = new Scene(root, 650, 450);
         currentStage.setScene(scene);
         currentStage.setTitle("Admin Select Program/Semester");
         currentStage.setResizable(false);
     }
     
-    /**
-     * Helper to return to Student Login (used by the back button on Admin Select).
-     */
     @FXML
     private void handleBackToLogin() {
         try {

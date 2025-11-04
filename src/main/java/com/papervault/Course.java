@@ -1,8 +1,5 @@
 package com.papervault;
 
-/**
- * Model class for the 'courses' table.
- */
 public class Course {
     private int courseId;
     private int programId;
@@ -18,7 +15,6 @@ public class Course {
         this.semester = semester;
     }
 
-    // --- Getters ---
     public int getCourseId() { return courseId; }
     public int getProgramId() { return programId; }
     public String getCourseCode() { return courseCode; }

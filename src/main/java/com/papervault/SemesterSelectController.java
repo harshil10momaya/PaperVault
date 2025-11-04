@@ -20,22 +20,14 @@ public class SemesterSelectController {
     private Student loggedInUser;
     
     public void initialize() {
-        // Populate the semester selector with all possible academic semesters (1-8)
-        semesterSelector.setItems(FXCollections.observableArrayList(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8)));
+        semesterSelector.setItems(FXCollections.observableArrayList(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)));
     }
     
-    /**
-     * Called by LoginController to pass the authenticated student object.
-     */
     public void setLoggedInUser(Student student) {
         this.loggedInUser = student;
         welcomeLabel.setText("Hello, " + student.getName() + "! Which semester's papers are you looking for?");
     }
     
-    /**
-     * Handles proceeding to the main Dashboard.
-     * FIX: Ensures the Dashboard stage is maximized for 'full screen'.
-     */
     @FXML
     private void handleProceedToDashboard() {
         Integer selectedSemester = semesterSelector.getValue();
@@ -52,7 +44,6 @@ public class SemesterSelectController {
             DashboardController controller = loader.getController();
             controller.setLoggedInUserAndSemester(loggedInUser, selectedSemester); 
             
-            // Use a large starting size
             Scene scene = new Scene(root, 1200, 800); 
             currentStage.setScene(scene);
             currentStage.setTitle("PaperVault - Semester " + selectedSemester + " Papers");

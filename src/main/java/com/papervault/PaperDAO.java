@@ -1,13 +1,11 @@
 package com.papervault;
 
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PaperDAO {
     
-    // --- Admin Function: Insert New Paper Metadata ---
     public boolean insertPaper(int courseId, int academicYear, String examType, String filePath) {
         String sql = "INSERT INTO papers (course_id, academic_year, exam_type, file_path) VALUES (?, ?, ?, ?)";
         
@@ -28,7 +26,6 @@ public class PaperDAO {
         }
     }
 
-    // --- Student Function: Retrieve Papers for Display ---
     public List<Paper> getPapersByCriteria(int courseId, Integer year, String examType, String searchTerm) {
         List<Paper> papers = new ArrayList<>();
         String sql = "SELECT p.*, c.course_code, c.course_title FROM papers p JOIN courses c ON p.course_id = c.course_id WHERE p.course_id = ?";
@@ -84,9 +81,6 @@ public class PaperDAO {
         return papers;
     }
     
-    /**
-     * NEW METHOD: Checks if a paper is in a specific student's favorites list.
-     */
     public boolean isFavorited(String studentId, int paperId) {
         String sql = "SELECT 1 FROM favorites WHERE student_id = ? AND paper_id = ?";
         try (Connection conn = DatabaseConnector.getInstance().getConnection();

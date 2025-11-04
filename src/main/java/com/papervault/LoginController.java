@@ -24,9 +24,6 @@ public class LoginController {
         studentDAO = new StudentDAO();
     }
 
-    /**
-     * Handles the action when the Student Login button is pressed.
-     */
     @FXML
     private void handleLogin(ActionEvent event) {
         String studentId = studentIdField.getText().trim();
@@ -43,7 +40,6 @@ public class LoginController {
             messageLabel.setText("Login Successful! Redirecting...");
             
             try {
-                // Redirect to Semester Selection Screen
                 loadSemesterSelectScene("/SemesterSelectView.fxml", student); 
             } catch (IOException e) {
                 System.err.println("Error loading semester select view: " + e.getMessage());
@@ -57,9 +53,6 @@ public class LoginController {
         }
     }
 
-    /**
-     * Handles the action to switch to the student sign-up screen.
-     */
     @FXML
     private void handleSignupAccess(ActionEvent event) {
         try {
@@ -79,9 +72,6 @@ public class LoginController {
         }
     }
 
-    /**
-     * Handles the action when the Admin Access button is pressed.
-     */
     @FXML
     private void handleAdminAccess(ActionEvent event) {
         try {
@@ -100,10 +90,6 @@ public class LoginController {
         }
     }
 
-    /**
-     * Helper method to switch to the Semester Selection scene.
-     * FIX: Sets current stage to resizable.
-     */
     private void loadSemesterSelectScene(String fxmlFile, Student student) throws IOException {
         Stage currentStage = (Stage) ((Parent) studentIdField.getParent()).getScene().getWindow();
         
@@ -116,7 +102,6 @@ public class LoginController {
         Scene scene = new Scene(root, 600, 400); 
         currentStage.setScene(scene);
         currentStage.setTitle("PaperVault - Select Semester");
-        // FIX: Allow resizing the window from here
         currentStage.setResizable(true); 
     }
 }

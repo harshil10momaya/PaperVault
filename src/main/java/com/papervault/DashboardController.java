@@ -9,17 +9,15 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.FileChooser; 
+import javafx.stage.FileChooser;
 
-import java.awt.Desktop; 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class DashboardController {
 
-    // --- Main Search Tab FXML Fields ---
     @FXML private Label welcomeLabel;
     @FXML private ComboBox<String> courseSelector;
     @FXML private TextField searchField;
@@ -32,10 +30,9 @@ public class DashboardController {
     @FXML private TableColumn<PaperViewModel, String> typeCol;
     @FXML private TableColumn<PaperViewModel, Button> viewCol;
     @FXML private TableColumn<PaperViewModel, Button> downloadCol;
-    @FXML private TableColumn<PaperViewModel, Button> bookmarkCol; // NEW FIELD
+    @FXML private TableColumn<PaperViewModel, Button> bookmarkCol;
 
-    // --- Favorites Tab FXML Fields ---
-    @FXML private TableView<PaperViewModel> favoritesTable; // NEW TABLE
+    @FXML private TableView<PaperViewModel> favoritesTable;
     @FXML private TableColumn<PaperViewModel, String> favCourseCodeCol;
     @FXML private TableColumn<PaperViewModel, String> favSubjectCol;
     @FXML private TableColumn<PaperViewModel, String> favYearCol;
@@ -44,13 +41,11 @@ public class DashboardController {
     @FXML private TableColumn<PaperViewModel, Button> favDownloadCol;
     @FXML private TableColumn<PaperViewModel, Button> favRemoveCol;
 
-    // --- Data Access & State ---
     private Student loggedInUser;
-    private int selectedSemester; 
     private CourseDAO courseDAO;
     private PaperDAO paperDAO;
     private ProgramDAO programDAO;
-    private FavoriteDAO favoriteDAO; // NEW DAO
+    private FavoriteDAO favoriteDAO;
     private List<Course> userCourses;
     private Course selectedCourse;
     
@@ -58,18 +53,16 @@ public class DashboardController {
         courseDAO = new CourseDAO();
         paperDAO = new PaperDAO();
         programDAO = new ProgramDAO();
-        favoriteDAO = new FavoriteDAO(); // INITIALIZE FAVORITE DAO
+        favoriteDAO = new FavoriteDAO();
         
-        // --- Initialize Main Table Columns ---
         courseCodeCol.setCellValueFactory(new PropertyValueFactory<>("courseCode"));
         subjectCol.setCellValueFactory(new PropertyValueFactory<>("courseTitle"));
         yearCol.setCellValueFactory(new PropertyValueFactory<>("academicYear"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("examType"));
         viewCol.setCellValueFactory(new PropertyValueFactory<>("viewButton"));
         downloadCol.setCellValueFactory(new PropertyValueFactory<>("downloadButton"));
-        bookmarkCol.setCellValueFactory(new PropertyValueFactory<>("bookmarkButton")); // NEW INITIALIZATION
+        bookmarkCol.setCellValueFactory(new PropertyValueFactory<>("bookmarkButton"));
 
-        // --- Initialize Favorites Table Columns (Same ViewModel used) ---
         favCourseCodeCol.setCellValueFactory(new PropertyValueFactory<>("courseCode"));
         favSubjectCol.setCellValueFactory(new PropertyValueFactory<>("courseTitle"));
         favYearCol.setCellValueFactory(new PropertyValueFactory<>("academicYear"));
@@ -78,7 +71,6 @@ public class DashboardController {
         favDownloadCol.setCellValueFactory(new PropertyValueFactory<>("downloadButton"));
         favRemoveCol.setCellValueFactory(new PropertyValueFactory<>("bookmarkButton")); 
         
-        // Populate Filters
         int currentYear = java.time.Year.now().getValue();
         ObservableList<Integer> years = FXCollections.observableArrayList();
         for (int i = 0; i < 4; i++) { 
@@ -92,12 +84,8 @@ public class DashboardController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> loadPapers());
     }
 
-    // --- State and Data Loading ---
-
     public void setLoggedInUserAndSemester(Student student, int semester) {
         this.loggedInUser = student;
-        this.selectedSemester = semester;
-        
         String programName = programDAO.getAllPrograms().stream()
             .filter(p -> p.getProgramId() == student.getProgramId())
             .findFirst()
@@ -137,9 +125,6 @@ public class DashboardController {
         }
     }
     
-    /**
-     * Loads papers based on search criteria and checks favorite status for each.
-     */
     @FXML
     private void loadPapers() {
         if (selectedCourse == null) {
@@ -166,18 +151,14 @@ public class DashboardController {
             viewModels.add(new PaperViewModel(paper, selectedCourse, isFav,
                                               this::handleViewPaper, 
                                               this::handleDownloadPaper,
-                                              this::handleBookmarkToggle)); // PASS NEW HANDLER
+                                              this::handleBookmarkToggle));
         }
         
         paperTable.setItems(viewModels);
     }
     
-    /**
-     * NEW: Called when the Favorites tab is selected.
-     */
     @FXML
     private void loadFavoritesTab() {
-        // Only run logic if the tab is visible/active (Fired on selection change)
         if (favoritesTable != null && favoritesTable.isVisible()) {
             List<Paper> papers = favoriteDAO.getFavoritesByStudent(loggedInUser.getStudentId());
             
@@ -185,7 +166,6 @@ public class DashboardController {
             for (Paper paper : papers) {
                  Course course = courseDAO.getCourseById(paper.getCourseId());
                  if (course != null) {
-                      // Note: We pass isFavorited=true and use a custom remove handler below
                       viewModels.add(new PaperViewModel(paper, course, true, 
                                                         this::handleViewPaper, 
                                                         this::handleDownloadPaper,
@@ -196,9 +176,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Handles bookmarking/unbookmarking from the MAIN search tab.
-     */
     private boolean handleBookmarkToggle(int paperId, boolean isCurrentlyFavorited) {
         if (isCurrentlyFavorited) {
             return favoriteDAO.removeFavorite(loggedInUser.getStudentId(), paperId);
@@ -207,19 +184,13 @@ public class DashboardController {
         }
     }
     
-    /**
-     * Handles removing a favorite from the FAVORITES tab.
-     */
     private boolean handleBookmarkRemove(int paperId, boolean isCurrentlyFavorited) {
-        // Since this is only called from the favorites tab, we just remove it.
         boolean success = favoriteDAO.removeFavorite(loggedInUser.getStudentId(), paperId);
         if (success) {
-            loadFavoritesTab(); // Refresh the favorites table immediately
+            loadFavoritesTab();
         }
         return success;
     }
-    
-    // --- Existing Handlers (View/Download) ---
     
     private void handleViewPaper(String filePath) {
         File file = new File(filePath);
@@ -277,8 +248,6 @@ public class DashboardController {
             }
         }
     }
-    
-    // --- Filter and Navigation Handlers ---
     
     @FXML
     private void handleClearYearFilter() {

@@ -27,7 +27,6 @@ public class SignupController {
         studentDAO = new StudentDAO();
         programDAO = new ProgramDAO();
         
-        // Load programs into the selector from the database
         List<Program> programs = programDAO.getAllPrograms();
         programSelector.setItems(FXCollections.observableArrayList(programs));
     }
@@ -35,13 +34,11 @@ public class SignupController {
     @FXML
     private void handleSignup() {
         String name = nameField.getText().trim();
-        // Force uppercase for ID consistency, matching student roll number format
         String studentId = idField.getText().trim().toUpperCase(); 
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
         Program selectedProgram = programSelector.getValue();
 
-        // 1. Basic Validation
         if (name.isEmpty() || studentId.isEmpty() || password.isEmpty() || selectedProgram == null) {
             messageLabel.setText("Please fill all required fields.");
             return;
@@ -55,12 +52,10 @@ public class SignupController {
             return;
         }
 
-        // 2. Attempt Signup
         boolean success = studentDAO.signUpStudent(studentId, name, selectedProgram.getProgramId(), password);
 
         if (success) {
             messageLabel.setText("Registration Successful! Redirecting to login.");
-            // Immediately redirect to login after successful registration
             handleBackToLogin(); 
         } else {
             messageLabel.setText("Registration Failed. ID might already exist or a database error occurred.");
@@ -74,7 +69,6 @@ public class SignupController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoginView.fxml"));
             Parent root = loader.load();
             
-            // Set the scene size back to the login size
             Scene scene = new Scene(root, 600, 400); 
             currentStage.setScene(scene);
             currentStage.setTitle("PaperVault - Student Login");

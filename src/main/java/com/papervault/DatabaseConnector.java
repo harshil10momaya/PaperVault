@@ -8,19 +8,13 @@ import java.util.Properties;
 
 public class DatabaseConnector {
 
-    // Singleton instance
     private static DatabaseConnector instance;
     private Connection connection;
     private String url;
     private String user;
     private String password;
 
-    /**
-     * Private constructor to prevent external instantiation.
-     * Loads properties and registers the JDBC driver.
-     */
     private DatabaseConnector() {
-        // Load database configuration from db.properties file
         Properties props = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("db.properties")) {
             
@@ -29,10 +23,8 @@ public class DatabaseConnector {
             if (fileInput != null) {
                 props.load(fileInput);
             } else {
-                // Fallback for local testing (may need adjustment based on IDE setup)
                 System.out.println("Warning: db.properties not found in classpath. Check location.");
                 
-                // Use default values for testing if file fails to load
                 props.setProperty("db.url", "jdbc:postgresql://localhost:5432/papervault_db");
                 props.setProperty("db.user", "postgres"); 
                 props.setProperty("db.password", "Harshil@10");
@@ -42,7 +34,6 @@ public class DatabaseConnector {
             this.user = props.getProperty("db.user");
             this.password = props.getProperty("db.password");
 
-            // Optional: Load the PostgreSQL JDBC driver explicitly (not strictly needed since Java 6)
             Class.forName("org.postgresql.Driver"); 
 
         } catch (Exception e) {
@@ -51,7 +42,6 @@ public class DatabaseConnector {
     }
 
     /**
-     * Gets the singleton instance of the DatabaseConnector.
      * @return The single DatabaseConnector instance.
      */
     public static DatabaseConnector getInstance() {
@@ -67,7 +57,6 @@ public class DatabaseConnector {
      * @throws SQLException if a database access error occurs.
      */
     public Connection getConnection() throws SQLException {
-        // Only create a new connection if the existing one is null or closed
         if (connection == null || connection.isClosed()) {
             System.out.println("Attempting to connect to database...");
             connection = DriverManager.getConnection(url, user, password);
@@ -76,9 +65,6 @@ public class DatabaseConnector {
         return connection;
     }
 
-    /**
-     * Closes the database connection.
-     */
     public void closeConnection() {
         if (connection != null) {
             try {
@@ -90,13 +76,11 @@ public class DatabaseConnector {
         }
     }
 
-    // Simple test method for verification (optional)
     public static void main(String[] args) {
         try {
             Connection conn = DatabaseConnector.getInstance().getConnection();
             if (conn != null) {
                 System.out.println("Test successful! Connection is ready.");
-                // Execute a simple query to verify
                 java.sql.Statement stmt = conn.createStatement();
                 java.sql.ResultSet rs = stmt.executeQuery("SELECT program_name FROM programs LIMIT 1");
                 if (rs.next()) {

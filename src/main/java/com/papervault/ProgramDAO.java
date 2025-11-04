@@ -9,9 +9,6 @@ import java.util.List;
 
 public class ProgramDAO {
     
-    /**
-     * Fetches all available programs from the database.
-     */
     public List<Program> getAllPrograms() {
         List<Program> programs = new ArrayList<>();
         String sql = "SELECT program_id, program_name FROM programs ORDER BY program_id";

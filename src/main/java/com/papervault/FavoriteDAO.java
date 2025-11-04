@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FavoriteDAO {
-
-    /**
-     * Adds a paper to a student's favorites list.
-     */
     public boolean addFavorite(String studentId, int paperId) {
         String sql = "INSERT INTO favorites (student_id, paper_id) VALUES (?, ?)";
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
@@ -22,7 +18,6 @@ public class FavoriteDAO {
             return stmt.executeUpdate() > 0;
             
         } catch (SQLException e) {
-            // Error 23505 indicates a unique constraint violation (already favorited)
             if (!e.getSQLState().equals("23505")) {
                 System.err.println("Error adding favorite: " + e.getMessage());
             }
@@ -30,9 +25,6 @@ public class FavoriteDAO {
         }
     }
 
-    /**
-     * Removes a paper from a student's favorites list.
-     */
     public boolean removeFavorite(String studentId, int paperId) {
         String sql = "DELETE FROM favorites WHERE student_id = ? AND paper_id = ?";
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
@@ -48,13 +40,9 @@ public class FavoriteDAO {
         }
     }
 
-    /**
-     * Retrieves all favorited papers for a specific student, along with their metadata.
-     */
     public List<Paper> getFavoritesByStudent(String studentId) {
         List<Paper> papers = new ArrayList<>();
         
-        // Query joins favorites to papers to get metadata
         String sql = "SELECT p.* FROM papers p JOIN favorites f ON p.paper_id = f.paper_id WHERE f.student_id = ? ORDER BY p.upload_date DESC";
         
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
@@ -63,7 +51,6 @@ public class FavoriteDAO {
             stmt.setString(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    // Note: Course metadata still needs to be looked up by the controller/service layer
                     papers.add(new Paper(
                         rs.getInt("paper_id"),
                         rs.getInt("course_id"),

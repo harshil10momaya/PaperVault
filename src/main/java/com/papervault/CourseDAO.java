@@ -9,13 +9,8 @@ import java.util.List;
 
 public class CourseDAO {
 
-    /**
-     * Fetches courses associated with a specific program ID and semester.
-     * Used by the Student Dashboard after semester selection.
-     */
     public List<Course> getCoursesByProgramAndSemester(int programId, int semester) {
         List<Course> courses = new ArrayList<>();
-        // Query filters by both the student's program (from login) and selected semester
         String sql = "SELECT course_id, program_id, course_code, course_title, semester FROM courses WHERE program_id = ? AND semester = ? ORDER BY course_code";
 
         try (Connection conn = DatabaseConnector.getInstance().getConnection();
@@ -40,10 +35,6 @@ public class CourseDAO {
         return courses;
     }
     
-    /**
-     * Fetches ALL courses for a specific program, regardless of semester.
-     * Used by the Admin Upload screen (Fixes the compilation error).
-     */
     public List<Course> getAllCoursesByProgram(int programId) {
         List<Course> courses = new ArrayList<>();
         String sql = "SELECT course_id, program_id, course_code, course_title, semester FROM courses WHERE program_id = ? ORDER BY course_code";
@@ -69,9 +60,6 @@ public class CourseDAO {
         return courses;
     }
     
-    /**
-     * Simple lookup function to get course details by ID.
-     */
     public Course getCourseById(int courseId) {
         String sql = "SELECT course_id, program_id, course_code, course_title, semester FROM courses WHERE course_id = ?";
         try (Connection conn = DatabaseConnector.getInstance().getConnection();

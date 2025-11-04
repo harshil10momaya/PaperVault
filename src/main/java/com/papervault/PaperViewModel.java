@@ -3,21 +3,16 @@ package com.papervault;
 import javafx.scene.control.Button;
 import java.util.function.Consumer;
 
-// Custom interface needed for the download action
 @FunctionalInterface
 interface TriConsumer<T, U, V> {
     void accept(T t, U u, V v);
 }
 
-// Custom interface for the bookmark toggle: (PaperID, isCurrentlyFavorited) -> Boolean Success
 @FunctionalInterface
 interface BookmarkToggleHandler {
     boolean toggle(int paperId, boolean isFavorited);
 }
 
-/**
- * ViewModel for displaying Paper data in the TableView and handling actions.
- */
 public class PaperViewModel {
     private final int paperId;
     private final String courseCode;
@@ -26,13 +21,10 @@ public class PaperViewModel {
     private final String examType;
     private final Button viewButton;
     private final Button downloadButton; 
-    private final Button bookmarkButton; // NEW FIELD
+    private final Button bookmarkButton;
     private final String filePath;
     private boolean isFavorited;
 
-    /**
-     * Constructor accepts handlers for View, Download, and BookmarkToggle.
-     */
     public PaperViewModel(Paper paper, Course course, boolean isFavorited, 
                           Consumer<String> viewAction, 
                           TriConsumer<String, String, String> downloadAction,
@@ -44,27 +36,23 @@ public class PaperViewModel {
         this.academicYear = paper.getAcademicYear();
         this.examType = paper.getExamType();
         this.filePath = paper.getFilePath();
-        this.isFavorited = isFavorited; // Status from DAO check
+        this.isFavorited = isFavorited;
 
-        // Create View Button
         this.viewButton = new Button("View PDF");
         this.viewButton.getStyleClass().add("view-button"); 
         this.viewButton.setOnAction(event -> viewAction.accept(this.filePath));
         
-        // Create Download Button
         this.downloadButton = new Button("Download");
         this.downloadButton.getStyleClass().add("button"); 
         this.downloadButton.setOnAction(event -> 
             downloadAction.accept(this.filePath, this.courseCode, this.examType)); 
             
-        // NEW: Create Bookmark Button
         this.bookmarkButton = new Button(isFavorited ? "★ Bookmarked" : "☆ Bookmark");
         this.bookmarkButton.getStyleClass().add(isFavorited ? "bookmark-active" : "bookmark-inactive"); 
 
         this.bookmarkButton.setOnAction(event -> {
             boolean success = bookmarkAction.toggle(this.paperId, this.isFavorited);
             if (success) {
-                // Update local state and button style immediately on success
                 this.isFavorited = !this.isFavorited;
                 updateBookmarkButtonStyle();
             }
@@ -81,7 +69,6 @@ public class PaperViewModel {
         }
     }
     
-    // --- Getters (Required by TableView PropertyValueFactory) ---
     public int getPaperId() { return paperId; }
     public String getCourseCode() { return courseCode; }
     public String getCourseTitle() { return courseTitle; }
@@ -89,6 +76,6 @@ public class PaperViewModel {
     public String getExamType() { return examType; }
     public Button getViewButton() { return viewButton; }
     public Button getDownloadButton() { return downloadButton; }
-    public Button getBookmarkButton() { return bookmarkButton; } // NEW GETTER
+    public Button getBookmarkButton() { return bookmarkButton; }
     public String getFilePath() { return filePath; }
 }

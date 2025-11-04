@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import java.util.stream.Collectors; // Needed for stream operations
 
 public class AdminUploadController {
 
@@ -22,12 +21,12 @@ public class AdminUploadController {
     @FXML private ComboBox<String> examTypeComboBox;
     @FXML private TextField filePathField;
     @FXML private Label messageLabel;
-    @FXML private Label headerLabel; // FIX 3: DECLARE the FXML Label field
+    @FXML private Label headerLabel;
 
     private File selectedFile;
     private CourseDAO courseDAO;
     private PaperDAO paperDAO;
-    private ProgramDAO programDAO; 
+    private ProgramDAO programDAO;
     private List<Course> availableCourses;
     
     private int selectedProgramId;
@@ -36,20 +35,16 @@ public class AdminUploadController {
     public void initialize() {
         courseDAO = new CourseDAO();
         paperDAO = new PaperDAO();
-        programDAO = new ProgramDAO(); 
+        programDAO = new ProgramDAO();
         
         ObservableList<String> examTypes = FXCollections.observableArrayList("CA1", "CA2", "SEM");
         examTypeComboBox.setItems(examTypes);
     }
     
-    /**
-     * Called by AdminSelectController to set the context for the upload.
-     */
     public void setProgramAndSemester(int programId, int semester) {
         this.selectedProgramId = programId;
         this.selectedSemester = semester;
         
-        // Update header label
         String programCode = programDAO.getAllPrograms().stream()
             .filter(p -> p.getProgramId() == programId)
             .findFirst()
@@ -109,10 +104,10 @@ public class AdminUploadController {
         boolean success = paperDAO.insertPaper(courseId, academicYear, examType, filePath);
 
         if (success) {
-            messageLabel.setText("✅ Paper metadata uploaded successfully!");
+            messageLabel.setText("Paper metadata uploaded successfully!");
             resetForm();
         } else {
-            messageLabel.setText("❌ Upload Failed. Check database for constraint errors (e.g., duplicate paper).");
+            messageLabel.setText("Upload Failed. Check database for constraint errors.");
         }
     }
 
