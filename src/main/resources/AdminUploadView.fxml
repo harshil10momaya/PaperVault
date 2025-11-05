@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import java.net.URL?>
 
 <VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="800.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.papervault.AdminUploadController">
@@ -34,9 +35,23 @@
             <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="300.0" />
         </columnConstraints>
 
-        <Label text="1. Course (Subject):" GridPane.rowIndex="0" />
-        <ComboBox fx:id="courseComboBox" prefWidth="350.0" promptText="Select Course Code/Title" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <Label text="1. Select Course:" GridPane.rowIndex="0" />
+        
+        <StackPane GridPane.columnIndex="1" GridPane.rowIndex="0">
+             <VBox fx:id="existingCoursePane" spacing="5.0">
+                <ComboBox fx:id="courseComboBox" onAction="#handleCourseSelectionChange" prefWidth="350.0" promptText="Select Existing Course" />
+                <Button onAction="#handleToggleNewCourseInput" text="Don't see it? Add New Subject" styleClass="button-clear" />
+             </VBox>
 
+             <VBox fx:id="newCoursePane" spacing="5.0" visible="false" managed="false">
+                <HBox spacing="10.0">
+                    <TextField fx:id="newCourseCodeField" promptText="New Course Code (e.g., 23XW55)" HBox.hgrow="ALWAYS" />
+                    <Button onAction="#handleToggleNewCourseInput" text="Cancel" styleClass="button-clear" />
+                </HBox>
+                <TextField fx:id="newCourseTitleField" promptText="New Course Title (e.g., Advanced AI)" />
+                <Label text="Note: Paper will be uploaded to this new course." textFill="#e74c3c" />
+             </VBox>
+        </StackPane>
         <Label text="2. Academic Year:" GridPane.rowIndex="1" />
         <TextField fx:id="yearField" promptText="e.g., 2025" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
